@@ -1,0 +1,46 @@
+define sandbox_user = "@SANDBOX_USER@"
+
+# Makes the file safe to load more than once (reload, start while the table exists):
+#   1. create the table empty if missing (no-op if it exists)
+#   2. delete it -> never fails, because line 8 guarantees it exists
+#   3. define it fresh below, so no rule is ever added twice
+# nft -f applies the whole file as one transaction: there is no moment without rules.
+table inet pluto_sandbox
+delete table inet pluto_sandbox
+
+table inet pluto_sandbox {
+    chain output {
+        type filter hook output priority 0; policy accept;
+
+        meta skuid $sandbox_user jump pluto_user_rules
+
+        # Safety net, should never match, block everything
+        meta skuid $sandbox_user counter drop
+    }
+
+    chain pluto_user_rules {
+
+        # Block traffic to local network
+        
+        # Exception: local DNS lookup over udp or tcp
+        ip daddr { 127.0.0.53, 127.0.0.1, 127.0.1.1, 127.0.0.54 } tcp dport 53 counter accept
+        ip daddr { 127.0.0.53, 127.0.0.1, 127.0.1.1, 127.0.0.54 } udp dport 53 counter accept
+        # Via IPv4:  
+        ip daddr { 127.0.0.0/8, 192.168.0.0/16, 169.254.0.0/16, 172.16.0.0/12, 10.0.0.0/8 } counter drop
+        # Via IPv6:
+        ip6 daddr { ::1/128, fe80::/10, fc00::/7 } counter drop
+
+        
+        # Allow
+
+        # Via tcp: HTTP, HTTPS, DNS
+        tcp dport { 443, 80, 53 } counter accept
+        # Via udp: DNS
+        udp dport { 53 } counter accept
+
+        
+        # If it wasn't allowed, silently drop everything
+        
+        counter drop
+    }
+}

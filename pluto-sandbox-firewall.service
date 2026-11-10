@@ -1,0 +1,17 @@
+[Unit]
+Description=Pluto sandbox egress firewall
+After=nftables.service
+PartOf=nftables.service
+ReloadPropagatedFrom=nftables.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/nft -f /etc/pluto-sandbox/egress.nft
+ExecReload=/usr/sbin/nft -f /etc/pluto-sandbox/egress.nft
+# - means ignore if fails
+ExecStop=-/usr/sbin/nft delete table inet pluto_sandbox 
+
+[Install]
+# stopping nftables disables our rules, therefor they should also be enable when nftables is started
+WantedBy=multi-user.target nftables.service

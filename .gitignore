@@ -1,0 +1,30 @@
+# project (internal notes and scratch area, not published)
+notes/
+testing/
+
+# editors / IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+\#*#
+.#*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code (personal, not shared)
+.claude/settings.local.json
+CLAUDE.local.md
+
+# secrets, logs, temporary files
+.env
+.env.*
+*.log
+*.tmp
+*.bak
+*.orig
+*.rej
+
