@@ -116,6 +116,7 @@ if ! id "$SANDBOX_USER" &>/dev/null; then
     useradd --create-home --shell /usr/sbin/nologin "$SANDBOX_USER"
 fi
 passwd -l "$SANDBOX_USER"
+loginctl enable-linger "$SANDBOX_USER"
 
 # create $PROJECTS_GROUP if it doesn't exist
 if ! getent group "$PROJECTS_GROUP" &>/dev/null; then
