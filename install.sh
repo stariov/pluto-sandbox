@@ -65,6 +65,18 @@ if [[ -d "$PROJECTS_DIR" ]]; then
     fi
 fi
 
+# warn user about git permissions change
+CHANGE_GIT_PERMISSIONS=false
+if command -v git >/dev/null 2>&1; then
+    read -rp "Make new git repos owner private (sets 2 values in your ~/.gitconfig)? [Y/n]: " change_git_answer
+    if [[ "$change_git_answer" == @(n|N|no|No) ]]; then
+        echo "install.sh: git will be unprotected when used in $PROJECTS_DIR" >&2
+        # exit 1, maybe git permissions should be enforced
+    else
+        CHANGE_GIT_PERMISSIONS=true
+    fi
+fi
+
 # search for foreign claude installations
 mapfile -t found < <(sudo -u "$HOST_USER" -H bash -lc 'type -ap claude' | grep '^/')
 foreign=()
@@ -96,7 +108,7 @@ if (( ${#foreign[@]} > 0 )); then
 fi
 
 
-# ── Step 0: host user/group setup (run as root) ───────────────────────────────────────────
+# ── Step 0: host setup: users, shared group, projects folder, git defaults (run as root) ──
 
 # create $SANDBOX_USER if it doesn't exist
 if ! id "$SANDBOX_USER" &>/dev/null; then
@@ -119,8 +131,17 @@ mkdir -p "$PROJECTS_DIR"
 chown "root:$PROJECTS_GROUP" "$PROJECTS_DIR"
 chmod 2770 "$PROJECTS_DIR"
 
+# changing git permissions
+if [[ "$CHANGE_GIT_PERMISSIONS" == true ]]; then
+    echo "Setting git permissions"
+    sudo -u "$HOST_USER" -H git -C / config --global core.sharedRepository 0600
+    sudo -u "$HOST_USER" -H git -C / config --global safe.bareRepository explicit
+fi
+
 
 # ── Step 1: network egress restriction (after step 0: nft resolves the user name at load) ─
+
+echo "Installing network restriction files for container"
 
 rules="$(sed 's/@SANDBOX_USER@/'"$SANDBOX_USER"'/' "$SCRIPT_DIR/pluto-netOutRules.nft")"
 
@@ -134,6 +155,8 @@ rm -f /etc/pluto-sandbox/egress.nft
 install -D -o "root" -g "root" -m 644 /dev/stdin "/etc/pluto-sandbox/egress.nft" <<< "$rules"
 # install the service
 install -o "root" -g "root" -m 644 "$SCRIPT_DIR/pluto-sandbox-firewall.service" "/etc/systemd/system/"
+
+echo "Restarting and enabling services for network restriction"
 
 # systemd caches unit files and would keep using old file (only warning "unit file changed") -> update the cache
 systemctl daemon-reload

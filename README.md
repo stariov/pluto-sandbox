@@ -22,6 +22,12 @@ sudo ./install.sh
 
 Running `install.sh` again is safe; use it to update the setup. If you request to delete Claude, `~/.claude` settings are kept.
 
+Installed Git after `install.sh`, or answered "n" to the Git question? This will only affect new repos.
+```bash
+git config --global core.sharedRepository 0600
+git config --global safe.bareRepository explicit
+```
+
 > **Important:** installing claude after our install will shadow our command
 > and launch unsandboxed claude. Check with `type -a claude` and look for
 > pluto-sandbox in file.
@@ -43,14 +49,12 @@ claude
 - `claude` (or `claude-pluto`) only starts inside `/srv/pluto-projects`. Anywhere else it refuses.
 - Inside the sandbox, the current project appears as `/projects`. Other projects
   are not visible.
-- **Git:** run Git yourself, on the host. Claude has no Git inside the sandbox.
-  `git init` and `git clone` inside `/srv/pluto-projects` create a `.git` folder
-  the sandbox can write to. Hooks or config planted there would run as **you** on
-  your next `git` command, and Git does not warn about it. Close the folder right
-  after creating it:
-  ```bash
-  chmod 700 .git
-  ```
+- **Git:** a repo belongs to whoever creates it (`git init`/`git clone`). Yours are
+  closed to Claude; Claude's are refused by your Git with `dubious ownership`.
+  **Never** add a repo to `safe.directory`.
+  - Repos from before the install: `chmod 700 .git` once, or re-clone if Claude
+    ran in that project while `.git` was open.
+  - Submodules or worktrees: let Claude own Git for that project.
 
 ## How it works
 
@@ -76,9 +80,11 @@ claude
 - Treat everything in `/srv/pluto-projects` as readable by Claude, and keep
   no secrets there.
 - A container is not a VM: a kernel exploit could still escape it.
-- `chmod 700 .git` is not complete protection: the sandbox can still rename
-  `.git` and put another folder in its place. `claude` does not check `.git`
-  yet; an automatic check at launch is planned.
+- Git in `/srv/pluto-projects` is the one way around the sandbox: hooks or config
+  planted in a repo would run as **you** on your next `git` command. The two Git
+  settings close that; without them Git there is unprotected, and nothing warns you.
+- The sandbox can rename `.git` and put another folder in its place.
+  Git's `dubious ownership` error in a repo you created means it was replaced: don't fix it, re-clone.
 
 ## License
 
