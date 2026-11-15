@@ -58,12 +58,12 @@ claude
 
 ## How it works
 
-- **Sandbox user:** the container runs as a separate user (`claudeuser`) with no
+- **Sandbox user:** the container runs as a separate user (`claudeuser-pluto`) with no
   password, no login shell and no sudo. Even if Claude breaks out of the
   container, it can only reach what that user can reach. Linger is enabled for
   it, because rootless Podman needs a systemd user session and this user never
   logs in.
-- **Shared folder:** `/srv/pluto-projects` belongs to the group `projects`.
+- **Shared folder:** `/srv/pluto-projects` belongs to the group `pluto-projects`.
   You and the sandbox user are both members, which lets you both work on the
   same files.
 - **Container limits:** no capabilities, no privilege escalation, 4 GB memory,

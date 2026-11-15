@@ -10,8 +10,8 @@ fi
 # ── Settings ──────────────────────────────────────────────────────────────────────────────
 
 HOST_USER="$(logname 2>/dev/null || echo "${SUDO_USER:-}")"
-SANDBOX_USER=claudeuser
-PROJECTS_GROUP=projects
+SANDBOX_USER=claudeuser-pluto
+PROJECTS_GROUP=pluto-projects
 # only change if you need to
 PROJECTS_DIR=/srv/pluto-projects
 INSTALL_PATH=/usr/local/bin/claude
@@ -37,22 +37,15 @@ if ! command -v nft &>/dev/null; then
     exit 1
 fi
 
-# ask for $HOST_USER, $SANDBOX_USER, $PROJECTS_GROUP
+# ask for $HOST_USER
 echo "Press Enter to accept the default shown in brackets."
 read -rp "Your own (existing) user, who will run claude [$HOST_USER]: " host_user_answer
-read -rp "Name for the new sandbox user [$SANDBOX_USER]: " sandbox_user_answer
-read -rp "Name for the new shared group [$PROJECTS_GROUP]: " projects_group_answer
 # replace default values with answers
 HOST_USER="${host_user_answer:-$HOST_USER}"
-SANDBOX_USER="${sandbox_user_answer:-$SANDBOX_USER}"
-PROJECTS_GROUP="${projects_group_answer:-$PROJECTS_GROUP}"
 
-# ensure variables were set correctly
-if ! id "$HOST_USER" &>/dev/null || [[ $HOST_USER == root ]] \
-   || [[ $SANDBOX_USER == "$HOST_USER" ]] \
-   || [[ $PROJECTS_GROUP == "$SANDBOX_USER" || $PROJECTS_GROUP == "$HOST_USER" ]];
-then
-    echo "install.sh: invalid host user, sandbox user or shared group" >&2
+# $HOST_USER must exist and not be root
+if ! id "$HOST_USER" &>/dev/null || [[ $HOST_USER == root ]]; then
+    echo "install.sh: invalid host user" >&2
     exit 1
 fi
 
@@ -234,5 +227,5 @@ EOF
 
 # ── Done ──────────────────────────────────────────────────────────────────────────────────
 
-echo "Build complete. Log out/in once (for the projects group), then run '$COMMAND_NAME' from inside $PROJECTS_DIR."
+echo "Build complete. Log out/in once (for the $PROJECTS_GROUP group), then run '$COMMAND_NAME' from inside $PROJECTS_DIR."
   
