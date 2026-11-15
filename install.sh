@@ -221,6 +221,7 @@ if ! sudo nft list table inet pluto_sandbox >/dev/null; then
 fi
 
 exec sudo -u "$SANDBOX_USER" podman run -it --rm \
+    --umask=0002 \
     --userns=keep-id --group-add keep-groups \
     --user "$(id -u "$SANDBOX_USER"):$(id -g "$SANDBOX_USER")" \
     --cap-drop=ALL --security-opt=no-new-privileges \
