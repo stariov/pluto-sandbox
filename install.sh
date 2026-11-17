@@ -219,7 +219,8 @@ exec sudo -u "$SANDBOX_USER" podman run -it --rm \
     --user "$(id -u "$SANDBOX_USER"):$(id -g "$SANDBOX_USER")" \
     --cap-drop=ALL --security-opt=no-new-privileges \
     --memory=4g --cpus=2 --pids-limit=256 \
-    -v "\${host_cwd}:/projects:Z" \
+    -v "\${host_cwd}:\${host_cwd}:Z" \
+    -w "\${host_cwd}" \
     -v "$HOME_VOLUME:$CONTAINER_HOME" \
     "$IMAGE_NAME" "$CONTAINER_HOME/.local/bin/claude" "\$@"
 EOF

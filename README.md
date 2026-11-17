@@ -47,8 +47,9 @@ claude
 ```
 
 - `claude` (or `claude-pluto`) only starts inside `/srv/pluto-projects`. Anywhere else it refuses.
-- Inside the sandbox, the current project appears as `/projects`. Other projects
-  are not visible.
+- Inside the sandbox, the folder you start `claude` in appears at its own path (e.g.
+  `/srv/pluto-projects/myproject`). Other projects are not visible. Claude keeps
+  separate history and memory per folder.
 - **Git:** a repo belongs to whoever creates it (`git init`/`git clone`). Yours are
   closed to Claude; Claude's are refused by your Git with `dubious ownership`.
   **Never** add a repo to `safe.directory`.

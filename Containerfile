@@ -10,4 +10,4 @@ RUN groupadd -g "${HOST_GID}" pluto && \
 
 USER pluto
 ENV HOME=/home/pluto
-WORKDIR /projects
+WORKDIR /home/pluto
