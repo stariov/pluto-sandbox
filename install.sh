@@ -205,6 +205,10 @@ if [[ "\$host_cwd" != "$PROJECTS_DIR" && "\$host_cwd" != "$PROJECTS_DIR"/* ]]; t
     echo "$COMMAND_NAME: must be run from inside $PROJECTS_DIR" >&2
     exit 1
 fi
+if [[ "\$host_cwd" == *:* ]]; then
+        echo "$COMMAND_NAME: project path must not contain ':'" >&2
+    exit 1
+fi
 
 # check network restriction
 if ! sudo nft list table inet pluto_sandbox >/dev/null; then
