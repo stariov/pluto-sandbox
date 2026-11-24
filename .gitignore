@@ -1,6 +1,7 @@
 # project (internal notes and scratch area, not published)
 notes/
 testing/
+Containerfile.local
 
 # editors / IDEs
 .vscode/

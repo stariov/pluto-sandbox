@@ -53,8 +53,17 @@ host.
 | `/etc/pluto-sandbox/egress.nft` | `root:root 644` | The firewall rules (`pluto-netOutRules.nft` with the sandbox user filled in). |
 | `/etc/systemd/system/pluto-sandbox-firewall.service` | `root:root 644` | Loads the rules at boot and whenever nftables reloads. |
 | nft table `inet pluto_sandbox` | kernel | The active rules, loaded from `egress.nft`. See [Network](#network). |
-| image `claude-sandbox` | sandbox user's Podman | Debian bookworm-slim plus `curl`, `ca-certificates`, `git`, and the user `pluto`. Built from `Containerfile`. |
+| image `claude-sandbox` | sandbox user's Podman | Debian bookworm-slim plus `curl`, `ca-certificates`, `git`, common tools (`python3`, `jq`, `dig`, `zip`, `unzip`, `less`, `ps`, `file`) and the user `pluto`. Built from `Containerfile`, see [Your own image](#your-own-image). |
 | volume `claude-home` | sandbox user's Podman | Claude's home folder, see below. Survives restarts, rebuilds and re-installs; only `podman volume rm` deletes it. |
+
+### Your own image
+
+Claude has no root in the container, and everything outside its home and your project is
+thrown away after each session, so Claude can't install system packages itself. If it
+needs one (for example `chromium` for screenshots), add it to a copy of `Containerfile`
+next to `install.sh`, e.g. `Containerfile.local`, and build from that copy:
+`sudo ./install.sh Containerfile.local`. The argument is a file name in the script's
+folder. The image only gets updates when you run `install.sh` again.
 
 ### Inside the container
 

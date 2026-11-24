@@ -1,6 +1,7 @@
 FROM debian:bookworm-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates git \
+	python3 jq bind9-dnsutils unzip zip less procps file \
 	&& rm -rf /var/lib/apt/lists/*
 
 ARG HOST_UID

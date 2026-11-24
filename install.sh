@@ -9,9 +9,13 @@ fi
 
 # ── Settings ──────────────────────────────────────────────────────────────────────────────
 
+# computed: folder of this script (Containerfile is copied from here)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+# variable settings
 HOST_USER="$(logname 2>/dev/null || echo "${SUDO_USER:-}")"
 SANDBOX_USER=claudeuser-pluto
 PROJECTS_GROUP=pluto-projects
+CONTAINERFILE=${1:-"Containerfile"}
 # only change if you need to
 PROJECTS_DIR=/srv/pluto-projects
 INSTALL_PATH=/usr/local/bin/claude
@@ -21,8 +25,6 @@ HOME_VOLUME=claude-home
 CONTAINER_HOME=/home/pluto
 # command name; preflight may change it to claude-pluto
 COMMAND_NAME=claude
-# computed: folder of this script (Containerfile is copied from here)
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 # important, project tag
 PLUTO_MARKER=pluto-sandbox
 
@@ -35,6 +37,19 @@ if ! command -v nft &>/dev/null; then
     echo "install.sh: nft (nftables) is not installed, but the sandbox needs it for its network rules." >&2
     echo "Install it first (Ubuntu/Debian: sudo apt install nftables), then run install.sh again." >&2
     exit 1
+fi
+
+# check Containerfile existance
+if [[ ! -f "$SCRIPT_DIR/$CONTAINERFILE" ]]; then
+    echo "install.sh: Containerfile not found: $SCRIPT_DIR/$CONTAINERFILE" >&2
+    exit 1
+fi
+if [[ "$CONTAINERFILE" != "Containerfile" ]]; then
+    read -rp "install.sh: Should $CONTAINERFILE be used to build the image? [Y/n]: " use_containerfile_answer
+    if [[ "$use_containerfile_answer" == @(n|N|no|No) ]]; then
+        echo "install.sh: stopped" >&2
+        exit 1
+    fi
 fi
 
 # ask for $HOST_USER
@@ -166,7 +181,7 @@ systemctl restart pluto-sandbox-firewall.service
 # tempfolder will be deleted by trap
 tempfolder="$(sudo -u "$SANDBOX_USER" mktemp -d)"
 trap 'rm -rf "$tempfolder"' EXIT
-install -o "$SANDBOX_USER" -g "$(id -g "$SANDBOX_USER")" -m 400 "$SCRIPT_DIR/Containerfile" "$tempfolder"
+install -o "$SANDBOX_USER" -g "$(id -g "$SANDBOX_USER")" -m 400 "$SCRIPT_DIR/$CONTAINERFILE" "$tempfolder/Containerfile"
 cd "$tempfolder"
 
 echo "Building podman image: $IMAGE_NAME"
