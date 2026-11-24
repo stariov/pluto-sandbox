@@ -94,7 +94,7 @@ The `podman run` options:
 | `--user UID:GID` | Runs as the sandbox user's IDs. |
 | `--cap-drop=ALL` | No Linux capabilities. |
 | `--security-opt=no-new-privileges` | setuid programs can't raise privileges. |
-| `--memory=4g --cpus=2 --pids-limit=256` | Resource limits. |
+| `--memory=4g --cpus=2 --pids-limit=1024` | Resource limits. The pids limit counts threads too, and Bun starts many per process, so it must not be set much lower. |
 | `-v "$cwd:$cwd:Z"` | Mounts only the start folder, at its own path. `:Z` is an SELinux label; on AppArmor systems (Ubuntu) it does nothing. |
 | `-w "$cwd"` | Starts Claude in that folder. Claude keys its memory and history on this path. |
 | `-v claude-home:/home/pluto` | Claude's persistent home. |
@@ -177,7 +177,7 @@ sudo -u claudeuser-pluto podman run -it --rm \
     --umask=0002 --userns=keep-id --group-add keep-groups \
     --user "$(id -u claudeuser-pluto):$(id -g claudeuser-pluto)" \
     --cap-drop=ALL --security-opt=no-new-privileges \
-    --memory=4g --cpus=2 --pids-limit=256 \
+    --memory=4g --cpus=2 --pids-limit=1024 \
     -v "$(pwd -P):$(pwd -P):Z" -w "$(pwd -P)" \
     -v claude-home:/home/pluto \
     claude-sandbox bash

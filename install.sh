@@ -237,7 +237,7 @@ exec sudo -u "$SANDBOX_USER" podman run -it --rm \
     --userns=keep-id --group-add keep-groups \
     --user "$(id -u "$SANDBOX_USER"):$(id -g "$SANDBOX_USER")" \
     --cap-drop=ALL --security-opt=no-new-privileges \
-    --memory=4g --cpus=2 --pids-limit=256 \
+    --memory=4g --cpus=2 --pids-limit=1024 \
     -v "\${host_cwd}:\${host_cwd}:Z" \
     -w "\${host_cwd}" \
     -v "$HOME_VOLUME:$CONTAINER_HOME" \
